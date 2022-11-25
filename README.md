@@ -18,3 +18,32 @@ directory, following execution of the `make` command.
 I also used testing extensively, for each part from keyword generation, matrix computation, 
 character location, to [full integration testing](./tests/playfair_tests.rs). Combining this
 with assertions in the code, I have a pretty good idea that my code is correct.
+
+## Examples
+You can see an example in [main.rs](./src/main.rs), or here is a simple shown implementation:
+
+**Encrypt:**
+```rust
+use playfair_rs::{Cipher, Playfair};
+
+// Example from https://en.wikipedia.org/wiki/Playfair_cipher.
+fn main() {
+    let pf = Playfair::new("playfair example");
+    let out = pf.encrypt("Hide the gold in the tree stump.");
+
+    // out = bmodzbxdnabekudmuixmmouvif
+}
+```
+
+**Decrypt:**
+```rust
+use playfair_rs::{Cipher, Playfair};
+
+// Example from https://en.wikipedia.org/wiki/Playfair_cipher.
+fn main() {
+    let pf = Playfair::new("playfair example");
+    let out = pf.decrypt("bmodzbxdnabekudmuixmmouvif");
+
+    // out = hidethegoldinthetrexestump
+}
+```
