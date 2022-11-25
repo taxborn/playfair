@@ -1,7 +1,5 @@
 //! Playfair cipher implementation in Rust
 
-#![allow(unused_variables)]
-#![allow(dead_code)]
 #![feature(iter_array_chunks)]
 
 /// Bigram type. Used in the Playfair cipher by grouping characters and performing operations on
@@ -109,8 +107,6 @@ impl Keyword {
 
 /// Playfair cipher structure, stores data needed during the encryption/decryption
 pub struct Playfair {
-    /// The keyword in which the matrix is constructed from.
-    keyword: Keyword,
     /// The matrix which encryption/decryption is operated over
     matrix: Matrix,
 }
@@ -209,7 +205,7 @@ impl Playfair {
         let matrix = keyword.to_matrix();
 
         // Return the playfair cipher
-        Self { keyword, matrix }
+        Self { matrix }
     }
 
     /// Bigramify takes in a string input, converts it to an even length, and splits the input into
