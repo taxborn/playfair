@@ -21,7 +21,7 @@ pub trait Cipher {
 }
 
 /// Keyword structure, used in constructing the matrix in which the encryption is performed over.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Keyword(String);
 
 impl Keyword {
@@ -107,6 +107,8 @@ impl Keyword {
 
 /// Playfair cipher structure, stores data needed during the encryption/decryption
 pub struct Playfair {
+    /// The keyword in which we generate the matrix from.
+    keyword: Keyword,
     /// The matrix which encryption/decryption is operated over
     matrix: Matrix,
 }
@@ -205,7 +207,7 @@ impl Playfair {
         let matrix = keyword.to_matrix();
 
         // Return the playfair cipher
-        Self { matrix }
+        Self { keyword, matrix }
     }
 
     /// Bigramify takes in a string input, converts it to an even length, and splits the input into
@@ -275,6 +277,26 @@ impl Playfair {
         assert_eq!(to_search, &'j');
         self.get_position_in_matrix(&'i')
     }
+
+    /// Get a copy of the keyword of the Playfair structure
+    pub fn keyword(&self) -> &str {
+        self.keyword.0.as_str()
+    }
+
+    /// Allow updating the current keyword of the Playfair object. This may be useful if you are
+    /// encrypting and decrypting amonst multiple parties at once, and have numerous different
+    /// keywords / matricies to operate over.
+    pub fn update_keyword(&mut self, kw: &str) {
+        // Generate the new keyword from the input
+        let kw = Keyword::new(kw);
+        // Generate a new matrix from the keyword
+        let mx = kw.to_matrix();
+
+        // Update the current keyword
+        self.keyword = kw;
+        // Update the current matrix to the new matrix
+        self.matrix = mx;
+    }
 }
 
 #[cfg(test)]
@@ -324,6 +346,14 @@ mod tests {
 
         assert_eq!(kw.0.len(), 25);
         assert_eq!(kw.0, "iabcdefghklmnopqrstuvwxyz");
+    }
+
+    #[test]
+    fn test_getting_keyword_pf_struct() {
+        let initial = "playfair example";
+        let pf = Playfair::new(initial);
+
+        assert_eq!(pf.keyword.0, "playfirexmbcdghknoqstuvwz");
     }
 
     #[test]
@@ -407,5 +437,18 @@ mod tests {
         let pos_2 = pf.get_position_in_matrix(&'j');
 
         assert_eq!(pos_1, pos_2);
+    }
+
+    #[test]
+    fn test_updating_keyword() {
+        let initial = "init";
+        let mut pf = Playfair::new(initial);
+
+        assert_eq!(pf.keyword(), "intabcdefghklmopqrsuvwxyz");
+
+        let new = "playfair example";
+        pf.update_keyword(new);
+
+        assert_eq!(pf.keyword(), "playfirexmbcdghknoqstuvwz");
     }
 }

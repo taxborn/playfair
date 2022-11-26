@@ -5,9 +5,10 @@ use playfair_rs::{Playfair, Cipher};
 fn main() {
     // Create a new playfair structure, inputting the keyword you want to encrypt on
     let pf = Playfair::new("playfair example");
+    println!("kw: {}", pf.keyword());
 
     // Encrypt a given string reference
-    let res = pf.encrypt("Hide the gold in the tree stump.");
+    let res = pf.encrypt("JaneIsAName");
     println!("{res}");
 
     // Decrypt a given string reference
