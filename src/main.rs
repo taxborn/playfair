@@ -1,5 +1,5 @@
 //! Testing library usage of what it would look like to use this structure.
-use playfair_rs::{Playfair, Cipher};
+use playfair::{Playfair, Cipher};
 
 /// Main function
 fn main() {

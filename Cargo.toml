@@ -5,7 +5,6 @@ authors = ["Braxton (taxborn) Fair <hello@taxborn.com>"]
 edition = "2021"
 description = "A Playfair Cipher implementation in Rust"
 license = "MIT"
-license-file = "LICENSE"
 rust-version = "1.65.0"
 repository = "https://github.com/taxborn/playfair-rs"
 
