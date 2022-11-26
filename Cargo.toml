@@ -1,11 +1,10 @@
 [package]
 name = "playfair"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Braxton (taxborn) Fair <hello@taxborn.com>"]
 edition = "2021"
 description = "A Playfair Cipher implementation in Rust"
 license = "MIT"
-rust-version = "1.65.0"
 repository = "https://github.com/taxborn/playfair-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

@@ -35,7 +35,7 @@ impl Keyword {
     /// Key: `playfair`
     /// Message: `Jane`
     /// Encrypted message: `bpun`
-    /// Decrypred of encryption: `iane`
+    /// Decrypted of encryption: `iane`
     ///
     /// Two things to note with this, it turns everything lowercase for easier searching and
     /// complexity, and j's are now converted to i's.
@@ -52,33 +52,29 @@ impl Keyword {
 
         // Ensure we only take the alphabetic parts of the input string and
         // remove any instance of 'j'.
-        let initial: String = initial
+        let mut parsed: String = initial
             .to_lowercase()
             .chars()
             .filter(|c| c.is_alphabetic() && *c != 'j')
             .collect();
 
-        // Append the alphabet (equating 'i' = 'j', thus ommitting 'j') to the initial input, to fill in the rest of the possible letters
+        // Append the alphabet (equating 'i' = 'j', thus omitting 'j') to the initial input, to fill in the rest of the possible letters
         // that the initial input might not cover.
-        let mut input_and_alphabet = String::from("abcdefghiklmnopqrstuvwxyz");
-        input_and_alphabet.insert_str(0, initial.as_str());
+        parsed.push_str("abcdefghiklmnopqrstuvwxyz");
 
         // We only need 25 letters, so keep pushing to the buffer while we have less than 25
         // characters.
         while buffer.len() < 25 {
             // Loop over each character in the input and alphabet string, checking that the
             // character is alphabetic since we can't use numbers of symbols in our Matrix.
-            for chr in input_and_alphabet.chars() {
+            for c in parsed.chars() {
                 // Check that the character does not exist in the buffer
-                if buffer.find(chr).is_none() {
+                if buffer.find(c).is_none() {
                     // If so, push to the buffer
-                    buffer.push(chr);
+                    buffer.push(c);
                 }
             }
         }
-
-        // Sanity check: Assert that none of the characters in the keyword are j.
-        assert!(!buffer.chars().any(|c| c == 'j'));
 
         // Return the generated keyword
         Self(buffer)
@@ -198,7 +194,7 @@ impl Cipher for Playfair {
 }
 
 impl Playfair {
-    /// Generates a new Playfair cipher structure with the keyword and appropriate padding to
+    /// Generates a new Playfair cipher structure with the keyword and appropriate alphabet padding to
     /// ensure it can fit into the matrix.
     pub fn new(kw: &str) -> Self {
         // Generate the keyword from the given input
@@ -245,9 +241,6 @@ impl Playfair {
 
         // For each chunk, convert it to a 2-tuple and push to the buffer
         chunks.for_each(|chunk| {
-            // Ensure that no pairs have duplicate letters.
-            assert_ne!(chunk[0], chunk[1]);
-
             // Push the pair to the buffer
             buffer.push((chunk[0], chunk[1]));
         });
