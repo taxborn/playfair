@@ -1,7 +1,13 @@
 [package]
-name = "playfair-rs"
-version = "0.1.0"
+name = "playfair"
+version = "0.0.1"
+authors = ["Braxton (taxborn) Fair <hello@taxborn.com>"]
 edition = "2021"
+description = "A Playfair Cipher implementation in Rust"
+license = "MIT"
+license-file = "LICENSE"
+rust-version = "1.65.0"
+repository = "https://github.com/taxborn/playfair-rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
