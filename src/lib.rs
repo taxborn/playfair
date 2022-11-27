@@ -1,7 +1,5 @@
 //! Playfair cipher implementation in Rust
 
-#![feature(iter_array_chunks)]
-
 /// Bigram type. Used in the Playfair cipher by grouping characters and performing operations on
 /// those pairs.
 pub type Bigram = (char, char);
@@ -235,15 +233,12 @@ impl Playfair {
             input.push('x');
         }
 
-        // Break the input into chunks of 2. We know everything will be covered because before this
-        // we ensure that the input is of even length.
-        let chunks = input.chars().array_chunks::<2>();
+        for idx in (0..input.len()).step_by(2) {
+            let a = input.chars().nth(idx).unwrap();
+            let b = input.chars().nth(idx + 1).unwrap();
 
-        // For each chunk, convert it to a 2-tuple and push to the buffer
-        chunks.for_each(|chunk| {
-            // Push the pair to the buffer
-            buffer.push((chunk[0], chunk[1]));
-        });
+            buffer.push((a, b));
+        }
 
         // Return the buffer
         buffer
