@@ -1,7 +1,5 @@
 //! Playfair cipher implementation in Rust
 
-#![feature(iter_array_chunks)]
-
 /// Bigram type. Used in the Playfair cipher by grouping characters and performing operations on
 /// those pairs.
 pub type Bigram = (char, char);
@@ -30,12 +28,12 @@ impl Keyword {
     /// the Playfair cipher is used on. The letter 'j' was chosen arbitrarily due to its low use in
     /// the English language. This will mean that upon decryption, you'll notice anything that once
     /// was a 'j' in the initial plain text is now an 'i'.
-    ///`
+    ///
     /// # Example
     /// Key: `playfair`
     /// Message: `Jane`
     /// Encrypted message: `bpun`
-    /// Decrypred of encryption: `iane`
+    /// Decrypted of encryption: `iane`
     ///
     /// Two things to note with this, it turns everything lowercase for easier searching and
     /// complexity, and j's are now converted to i's.
@@ -52,33 +50,29 @@ impl Keyword {
 
         // Ensure we only take the alphabetic parts of the input string and
         // remove any instance of 'j'.
-        let initial: String = initial
+        let mut parsed: String = initial
             .to_lowercase()
             .chars()
             .filter(|c| c.is_alphabetic() && *c != 'j')
             .collect();
 
-        // Append the alphabet (equating 'i' = 'j', thus ommitting 'j') to the initial input, to fill in the rest of the possible letters
+        // Append the alphabet (equating 'i' = 'j', thus omitting 'j') to the initial input, to fill in the rest of the possible letters
         // that the initial input might not cover.
-        let mut input_and_alphabet = String::from("abcdefghiklmnopqrstuvwxyz");
-        input_and_alphabet.insert_str(0, initial.as_str());
+        parsed.push_str("abcdefghiklmnopqrstuvwxyz");
 
         // We only need 25 letters, so keep pushing to the buffer while we have less than 25
         // characters.
         while buffer.len() < 25 {
             // Loop over each character in the input and alphabet string, checking that the
             // character is alphabetic since we can't use numbers of symbols in our Matrix.
-            for chr in input_and_alphabet.chars() {
+            for c in parsed.chars() {
                 // Check that the character does not exist in the buffer
-                if buffer.find(chr).is_none() {
+                if buffer.find(c).is_none() {
                     // If so, push to the buffer
-                    buffer.push(chr);
+                    buffer.push(c);
                 }
             }
         }
-
-        // Sanity check: Assert that none of the characters in the keyword are j.
-        assert!(!buffer.chars().any(|c| c == 'j'));
 
         // Return the generated keyword
         Self(buffer)
@@ -198,7 +192,7 @@ impl Cipher for Playfair {
 }
 
 impl Playfair {
-    /// Generates a new Playfair cipher structure with the keyword and appropriate padding to
+    /// Generates a new Playfair cipher structure with the keyword and appropriate alphabet padding to
     /// ensure it can fit into the matrix.
     pub fn new(kw: &str) -> Self {
         // Generate the keyword from the given input
@@ -222,8 +216,8 @@ impl Playfair {
             .filter(|c| c.is_alphabetic())
             .collect();
 
-        // Loop over the characters of the input 2 at a time. If there are duplicates insert an 'x'
-        // to seperate the duplicates
+        // Loop over the characters of the input 2 at a time, checking that there is a next one. 
+        // If there are duplicates insert an 'x' to seperate the duplicates.
         for idx in (0..input.len()).step_by(2) {
             let a = input.chars().nth(idx).unwrap();
 
@@ -239,18 +233,14 @@ impl Playfair {
             input.push('x');
         }
 
-        // Break the input into chunks of 2. We know everything will be covered because before this
-        // we ensure that the input is of even length.
-        let chunks = input.chars().array_chunks::<2>();
+        // Again loop over the pairs, this time we are guarenteed that it is an even length so we
+        // don't need the `if let Some(_)` check.
+        for idx in (0..input.len()).step_by(2) {
+            let a = input.chars().nth(idx).unwrap();
+            let b = input.chars().nth(idx + 1).unwrap();
 
-        // For each chunk, convert it to a 2-tuple and push to the buffer
-        chunks.for_each(|chunk| {
-            // Ensure that no pairs have duplicate letters.
-            assert_ne!(chunk[0], chunk[1]);
-
-            // Push the pair to the buffer
-            buffer.push((chunk[0], chunk[1]));
-        });
+            buffer.push((a, b));
+        }
 
         // Return the buffer
         buffer
@@ -272,9 +262,7 @@ impl Playfair {
         }
 
         // If no position was found, we were probably searching for a 'j', which in our current
-        // implementation, i = j, so check that we were in fact searching for a j, then return the
-        // rsult for searching for 'i'.
-        assert_eq!(to_search, &'j');
+        // implementation, i = j, so  return the result for searching for 'i'.
         self.get_position_in_matrix(&'i')
     }
 
