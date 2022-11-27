@@ -24,7 +24,7 @@ You can see an example in [main.rs](./src/main.rs), or here is a simple shown im
 
 **Encrypt:**
 ```rust
-use playfair_rs::{Cipher, Playfair};
+use playfair::{Cipher, Playfair};
 
 // Example from https://en.wikipedia.org/wiki/Playfair_cipher.
 fn main() {
@@ -37,7 +37,7 @@ fn main() {
 
 **Decrypt:**
 ```rust
-use playfair_rs::{Cipher, Playfair};
+use playfair::{Cipher, Playfair};
 
 // Example from https://en.wikipedia.org/wiki/Playfair_cipher.
 fn main() {
