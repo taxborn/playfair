@@ -265,9 +265,7 @@ impl Playfair {
         }
 
         // If no position was found, we were probably searching for a 'j', which in our current
-        // implementation, i = j, so check that we were in fact searching for a j, then return the
-        // rsult for searching for 'i'.
-        assert_eq!(to_search, &'j');
+        // implementation, i = j, so  return the result for searching for 'i'.
         self.get_position_in_matrix(&'i')
     }
 
