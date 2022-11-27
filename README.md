@@ -1,6 +1,6 @@
 # playfair-rs - [Playfair Cipher](https://en.wikipedia.org/wiki/Playfair_cipher) in [Rust](https://www.rust-lang.org/).
-Origionally was an assignment for my CS 303: Databases and Information Security class, 
-I wanted to take some more time and implement it again. This is that solution to implementing
+Originally was an assignment for my CS 303: Databases and Information Security class, 
+I wanted to take some more time and implement it again. This is my solution to implementing
 the [Playfair Cipher](https://en.wikipedia.org/wiki/Playfair_cipher) in Rust.
 
 ## Design choices
@@ -22,7 +22,7 @@ with assertions in the code, I have a pretty good idea that my code is correct.
 ## Examples
 You can see an example in [main.rs](./src/main.rs), or here is a simple shown implementation:
 
-**Encrypt:**
+**Encryption steps:**
 ```rust
 use playfair::{Cipher, Playfair};
 
@@ -35,7 +35,7 @@ fn main() {
 }
 ```
 
-**Decrypt:**
+**Decryption steps:**
 ```rust
 use playfair::{Cipher, Playfair};
 
@@ -45,5 +45,7 @@ fn main() {
     let out = pf.decrypt("bmodzbxdnabekudmuixmmouvif");
 
     // out = hidethegoldinthetrexestump
+    // NOTE: the extra 'x' here ^ is expected since it was inserted during the encryption process.
+    // Read more about the Playfair cipher to understand why.
 }
 ```
