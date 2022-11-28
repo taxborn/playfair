@@ -216,7 +216,7 @@ impl Playfair {
             .filter(|c| c.is_alphabetic())
             .collect();
 
-        // Loop over the characters of the input 2 at a time, checking that there is a next one. 
+        // Loop over the characters of the input 2 at a time, checking that there is a next one.
         // If there are duplicates insert an 'x' to seperate the duplicates.
         for idx in (0..input.len()).step_by(2) {
             let a = input.chars().nth(idx).unwrap();
@@ -252,12 +252,11 @@ impl Playfair {
     fn get_position_in_matrix(&self, to_search: &char) -> Position {
         // Loop over each column and item.
         for (idx, column) in self.matrix.iter().enumerate() {
-            for (jdx, chr) in column.iter().enumerate() {
-                // Check if we found a match
-                if to_search == chr {
-                    // Return the position
-                    return (idx, jdx);
-                }
+            // Check if what we are searching for is in the Matrix. This seems to be marginally
+            // faster than just another for loop and comparison.
+            if let Some(jdx) = column.iter().position(|&chr| chr == *to_search) {
+                // Return the position we found.
+                return (idx, jdx);
             }
         }
 
