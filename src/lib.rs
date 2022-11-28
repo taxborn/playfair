@@ -28,7 +28,7 @@ impl Keyword {
     /// the Playfair cipher is used on. The letter 'j' was chosen arbitrarily due to its low use in
     /// the English language. This will mean that upon decryption, you'll notice anything that once
     /// was a 'j' in the initial plain text is now an 'i'.
-    ///`
+    ///
     /// # Example
     /// Key: `playfair`
     /// Message: `Jane`
@@ -216,8 +216,8 @@ impl Playfair {
             .filter(|c| c.is_alphabetic())
             .collect();
 
-        // Loop over the characters of the input 2 at a time. If there are duplicates insert an 'x'
-        // to seperate the duplicates
+        // Loop over the characters of the input 2 at a time, checking that there is a next one. 
+        // If there are duplicates insert an 'x' to seperate the duplicates.
         for idx in (0..input.len()).step_by(2) {
             let a = input.chars().nth(idx).unwrap();
 
@@ -233,6 +233,8 @@ impl Playfair {
             input.push('x');
         }
 
+        // Again loop over the pairs, this time we are guarenteed that it is an even length so we
+        // don't need the `if let Some(_)` check.
         for idx in (0..input.len()).step_by(2) {
             let a = input.chars().nth(idx).unwrap();
             let b = input.chars().nth(idx + 1).unwrap();
