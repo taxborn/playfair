@@ -1,15 +1,18 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use playfair::*;
 
+#[inline]
 fn keyword_generation() {
     let _ = Playfair::new("playfair example");
 }
 
+#[inline]
 fn encrypt() {
     let pf = Playfair::new("playfair example");
     pf.encrypt("hide the gold in the tree stump");
 }
 
+#[inline]
 fn decrypt() {
     let pf = Playfair::new("playfair example");
     pf.decrypt("bmodzbxdnabekudmuixmmouvif");
