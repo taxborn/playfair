@@ -4,11 +4,11 @@ use playfair::{Playfair, Cipher};
 /// Main function
 fn main() {
     // Create a new playfair structure, inputting the keyword you want to encrypt on
-    let pf = Playfair::new("braxton scott fair");
+    let pf = Playfair::new("playfair example");
     println!("kw: {}", pf.keyword());
 
     // Encrypt a given string reference
-    let res = pf.encrypt("JaneIsAName");
+    let res = pf.encrypt("Lorem ipsum dolor sit amet.");
     println!("{res}");
 
     // Decrypt a given string reference
