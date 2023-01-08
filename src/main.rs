@@ -8,7 +8,7 @@ fn main() {
     println!("kw: {}", pf.keyword());
 
     // Encrypt a given string reference
-    let res = pf.encrypt("JaneIsAName");
+    let res = pf.encrypt("Lorem ipsum dolor sit amet.");
     println!("{res}");
 
     // Decrypt a given string reference
