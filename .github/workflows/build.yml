@@ -1,5 +1,5 @@
 name: Compile and test 
-run-name: Building and testing commit `{{ github.sha }}`...
+run-name: Building and testing commit `${{ github.sha }}`...
 
 on: push
 

@@ -1,4 +1,5 @@
 # playfair-rs - [Playfair Cipher](https://en.wikipedia.org/wiki/Playfair_cipher) in [Rust](https://www.rust-lang.org/).
+[![Compile and test](https://github.com/taxborn/playfair-rs/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/taxborn/playfair-rs/actions/workflows/build.yml)
 Originally was an assignment for my CS 303: Databases and Information Security class, 
 I wanted to take some more time and implement it again. This is my solution to implementing
 the [Playfair Cipher](https://en.wikipedia.org/wiki/Playfair_cipher) in Rust.
