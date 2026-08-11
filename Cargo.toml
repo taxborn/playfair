@@ -3,6 +3,7 @@ name = "playfair"
 version = "1.0.2"
 authors = ["Braxton (taxborn) Fair <hello@taxborn.com>"]
 edition = "2021"
+rust-version = "1.87"
 description = "A Playfair Cipher implementation in Rust"
 license = "MIT"
 repository = "https://git.mischief.town/taxborn/playfair"
