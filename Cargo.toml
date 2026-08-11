@@ -1,6 +1,6 @@
 [package]
 name = "playfair"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Braxton (taxborn) Fair <hello@taxborn.com>"]
 edition = "2021"
 description = "A Playfair Cipher implementation in Rust"
