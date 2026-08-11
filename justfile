@@ -6,9 +6,8 @@
 # container would cost more time than the checks themselves take to run.
 #
 # On NixOS nothing provides a linker by default, and rustfmt/clippy ship as
-# separate packages, so run recipes inside a shell that supplies them:
-#
-#     nix-shell -p gcc rustfmt clippy --run "just ci"
+# separate packages, so run these inside the shell.nix dev shell: `nix-shell` in
+# the repo root, then `just ci`.
 
 # Show the available recipes.
 default:

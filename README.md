@@ -68,11 +68,11 @@ installing it into the build container would cost more than the checks themselve
 therefore have to be kept in sync by hand.
 
 > **On NixOS** there is no `cc` on `PATH` by default, so any `cargo` command that links
-> fails with ``linker `cc` not found``. `rustfmt` and `clippy` are separate packages too,
-> so run recipes inside a shell that supplies all three:
+> fails with ``linker `cc` not found``, and `rustfmt`/`clippy` are separate packages from
+> `rustc`. [`shell.nix`](shell.nix) supplies all of them plus `just`:
 >
 > ```sh
-> nix-shell -p gcc rustfmt clippy --run "just ci"
+> nix-shell        # then: just ci
 > ```
 
 ## Releasing
