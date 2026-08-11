@@ -9,11 +9,11 @@ some equate 'i' to 'j'. For my implementation, I went with 'i' = 'j', since that
 what the Wikipedia article's example followed, and a [random online playfair cipher](https://www.boxentriq.com/code-breaking/playfair-cipher)
 website used by default. This allowed for easy verification of my implementation.
 
-I also used a [Makefile](Makefile) to enforce strict commenting of all my functions 
-to ensure I knew what was going on at that line and function. As well thanks to the awesome
-[Rust ecosystem](https://www.rust-lang.org/tools), it enables generation of documentation
-with just a single `make` command. That documentation can be found in the `./target/doc/playfair_rs/`
-directory, following execution of the `make` command.
+I also used a task runner (originally a Makefile, now a [justfile](justfile)) to enforce
+strict commenting of all my functions to ensure I knew what was going on at that line and
+function. As well thanks to the awesome [Rust ecosystem](https://www.rust-lang.org/tools),
+it enables generation of documentation from a single `just doc` command. That documentation
+can be found in the `./target/doc/playfair/` directory afterwards.
 
 I also used testing extensively, for each part from keyword generation, matrix computation, 
 character location, to [full integration testing](./tests/playfair_tests.rs). Combining this
@@ -51,22 +51,29 @@ fn main() {
 ```
 
 ## Development
-Every check CI enforces can be run locally:
+[`just ci`](justfile) runs every check CI enforces, in the same order, so a green run
+locally means a green run on the PR:
 
 ```sh
-cargo fmt --check
-cargo clippy --all-targets -- -F clippy::missing_docs_in_private_items -D warnings
-cargo build --all-targets
-cargo test
-RUSTDOCFLAGS="-D warnings" cargo doc --no-deps --document-private-items
+just ci
 ```
 
-`make` covers the docs, lint, test and benchmark steps in one go.
+`just --list` shows the individual recipes — `fmt`, `lint`, `build`, `test`, `doc` and
+`bench` — if you want to run one at a time. Benchmarks are deliberately left out of `ci`,
+being far too slow and noisy to gate a pull request on.
+
+The workflow in [`.forgejo/workflows/ci.yml`](.forgejo/workflows/ci.yml) repeats these
+commands rather than calling `just`, because `just` isn't packaged for Debian and
+installing it into the build container would cost more than the checks themselves. The two
+therefore have to be kept in sync by hand.
 
 > **On NixOS** there is no `cc` on `PATH` by default, so any `cargo` command that links
-> fails with ``linker `cc` not found``. Prefix with `nix-shell -p gcc --run "..."`, or add
-> `gcc` to the dev shell. `cargo fmt` and `cargo clippy` additionally need `rustfmt` and
-> `clippy` in that shell, since nixpkgs ships them as separate packages.
+> fails with ``linker `cc` not found``. `rustfmt` and `clippy` are separate packages too,
+> so run recipes inside a shell that supplies all three:
+>
+> ```sh
+> nix-shell -p gcc rustfmt clippy --run "just ci"
+> ```
 
 ## Releasing
 [`Cargo.toml`](Cargo.toml) is the single source of truth for the version, and the git tag

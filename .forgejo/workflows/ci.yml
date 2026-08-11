@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+# These steps mirror the `ci` recipe in the justfile. `just` isn't packaged for
+# Debian, so installing it here would cost more than the checks take to run -
+# the duplication is deliberate, but the two must be kept in sync.
 jobs:
   check:
     # `docker` is the default label for a stock Forgejo runner. If your runner
@@ -26,8 +29,8 @@ jobs:
       - name: Formatting
         run: cargo fmt --check
 
-      # Mirrors the lint from the Makefile. --all-targets covers benches too, so
-      # they stay compiling without paying for a full `cargo bench` run.
+      # --all-targets covers benches too, so they stay compiling without paying
+      # for a full `cargo bench` run.
       - name: Clippy
         run: cargo clippy --all-targets -- -F clippy::missing_docs_in_private_items -D warnings
 
