@@ -5,41 +5,24 @@ on:
   push:
     branches: [main]
 
-# These steps mirror the `ci` recipe in the justfile. `just` isn't packaged for
-# Debian, so installing it here would cost more than the checks take to run -
-# the duplication is deliberate, but the two must be kept in sync.
 jobs:
   check:
-    # `docker` is the default label for a stock Forgejo runner. If your runner
-    # was registered with different labels, change this to match.
     runs-on: docker
-    # Pinned on purpose: `rust:1` would float, and new clippy releases regularly
-    # add lints that turn `-D warnings` red on untouched code. Bump deliberately.
     container:
       image: rust:1.97-bookworm
 
     steps:
-      - uses: actions/checkout@v4
-
-      # The official rust images install with `--profile minimal`, which omits
-      # both of these.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install clippy and rustfmt
         run: rustup component add clippy rustfmt
-
       - name: Formatting
         run: cargo fmt --check
-
-      # --all-targets covers benches too, so they stay compiling without paying
-      # for a full `cargo bench` run.
       - name: Clippy
         run: cargo clippy --all-targets -- -F clippy::missing_docs_in_private_items -D warnings
-
       - name: Build
         run: cargo build --all-targets
-
       - name: Test
         run: cargo test
-
       - name: Docs
         env:
           RUSTDOCFLAGS: -D warnings
