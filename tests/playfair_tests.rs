@@ -1,4 +1,4 @@
-use playfair::{Playfair, Cipher};
+use playfair::{Cipher, Playfair};
 
 #[test]
 fn test_playfair_wiki() {
