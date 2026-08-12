@@ -76,34 +76,49 @@ therefore have to be kept in sync by hand.
 > ```
 
 ## Releasing
-[`Cargo.toml`](Cargo.toml) is the single source of truth for the version, and the git tag
-is derived from it — never the other way round. There is no manual tagging or publishing
-step.
+Releases are deliberately manual. CI checks every pull request but never publishes, so
+that each release gets written notes and a GPG-signed tag rather than appearing silently
+on merge. [`Cargo.toml`](Cargo.toml) remains the single source of truth for the version.
 
-1. In your PR, bump `version` in [`Cargo.toml`](Cargo.toml) following semver.
-2. Get the PR green and merge it into `main`.
-3. [`.forgejo/workflows/release.yml`](.forgejo/workflows/release.yml) does the rest: it
-   reads the version, checks whether `v<version>` is already tagged, and if not, runs the
-   tests, verifies the package, publishes to crates.io, then pushes the tag.
+1. Bump `version` in [`Cargo.toml`](Cargo.toml) following semver. If the change leans on a
+   newer stdlib API, bump `rust-version` in the same commit so downstream users get a clear
+   toolchain error rather than a confusing compile failure.
+2. Merge that through a PR as normal, so CI has checked it.
+3. On `main`, with a clean tree, confirm everything still passes:
 
-A merge that does not bump the version is simply not a release — the workflow finds the
-existing tag and exits. That makes it safe to merge as often as you like, and safe to
-re-run a failed release by merging again.
+   ```sh
+   nix-shell        # then: just ci
+   ```
 
-Publishing happens *before* tagging on purpose: crates.io is immutable and a tag is not,
-so a tag always means "this version really is on crates.io". In the one awkward case where
-the publish succeeds but the tag push fails, tag it by hand:
+4. Verify the package exactly as crates.io will see it. This refuses to run on a dirty
+   tree, which is a useful guard rather than an annoyance:
 
-```sh
-git tag -a v<version> -m "Release v<version>"
-git push origin v<version>
-```
+   ```sh
+   cargo publish --dry-run
+   ```
 
-Two things the release depends on:
+5. Publish:
 
-- A `CARGO_REGISTRY_TOKEN` repository secret holding a crates.io API token with publish
-  rights on the `playfair` crate. The tag push uses the automatic `GITHUB_TOKEN`, which
-  Forgejo grants repository write access on `push` events, so it needs no setup.
-- `rust-version` in [`Cargo.toml`](Cargo.toml) staying honest. Bump it whenever a change
-  starts leaning on a newer stdlib API, so downstream users get a clear toolchain error
-  rather than a confusing compile failure.
+   ```sh
+   cargo publish
+   ```
+
+6. Tag it, signed, and push the tag:
+
+   ```sh
+   git tag -s v<version> -m "Release v<version>"
+   git push origin v<version>
+   ```
+
+7. Write the release notes against that tag in Forgejo, under **Releases → New release**.
+
+Publish before tagging: crates.io is immutable and a tag is not, so a tag always means
+"this version really is on crates.io". A failed publish can simply be fixed and retried; a
+tag that got ahead of a failed publish would be a lie you then have to clean up.
+
+Publishing needs a crates.io API token with rights on the `playfair` crate — `cargo login`
+stores it in `~/.cargo/credentials.toml`. Signing needs `user.signingkey` set and
+`commit.gpgsign` on, which `git tag -s` picks up automatically.
+
+> Tags before `v1.0.3` were pushed by CI and are annotated but **not** signed. Only tags
+> from `v1.0.3` onward carry a signature.
