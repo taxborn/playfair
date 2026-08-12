@@ -8,13 +8,21 @@ on:
 jobs:
   check:
     runs-on: docker
+    # node, not rust: actions/checkout is a JavaScript action and needs node in
+    # the job container. Keep this non-slim - the slim variants drop gcc, and
+    # cargo needs cc to link.
     container:
-      image: rust:1.97-bookworm
+      image: node:20-bookworm
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Install clippy and rustfmt
-        run: rustup component add clippy rustfmt
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+            | sh -s -- -y --profile minimal --default-toolchain 1.97.1
+          . "$HOME/.cargo/env"
+          rustup component add clippy rustfmt
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - name: Formatting
         run: cargo fmt --check
       - name: Clippy
