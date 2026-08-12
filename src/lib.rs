@@ -229,7 +229,7 @@ impl Playfair {
         }
 
         // If we are still at an odd length, append a 0 at the end of the input.
-        if input.len() % 2 != 0 {
+        if !input.len().is_multiple_of(2) {
             input.push('x');
         }
 

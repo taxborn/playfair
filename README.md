@@ -9,11 +9,11 @@ some equate 'i' to 'j'. For my implementation, I went with 'i' = 'j', since that
 what the Wikipedia article's example followed, and a [random online playfair cipher](https://www.boxentriq.com/code-breaking/playfair-cipher)
 website used by default. This allowed for easy verification of my implementation.
 
-I also used a [Makefile](Makefile) to enforce strict commenting of all my functions 
-to ensure I knew what was going on at that line and function. As well thanks to the awesome
-[Rust ecosystem](https://www.rust-lang.org/tools), it enables generation of documentation
-with just a single `make` command. That documentation can be found in the `./target/doc/playfair_rs/`
-directory, following execution of the `make` command.
+I also used a task runner (originally a Makefile, now a [justfile](justfile)) to enforce
+strict commenting of all my functions to ensure I knew what was going on at that line and
+function. As well thanks to the awesome [Rust ecosystem](https://www.rust-lang.org/tools),
+it enables generation of documentation from a single `just doc` command. That documentation
+can be found in the `./target/doc/playfair/` directory afterwards.
 
 I also used testing extensively, for each part from keyword generation, matrix computation, 
 character location, to [full integration testing](./tests/playfair_tests.rs). Combining this
@@ -49,3 +49,61 @@ fn main() {
     // Read more about the Playfair cipher to understand why.
 }
 ```
+
+## Development
+[`just ci`](justfile) runs every check CI enforces, in the same order, so a green run
+locally means a green run on the PR:
+
+```sh
+just ci
+```
+
+`just --list` shows the individual recipes — `fmt`, `lint`, `build`, `test`, `doc` and
+`bench` — if you want to run one at a time. Benchmarks are deliberately left out of `ci`,
+being far too slow and noisy to gate a pull request on.
+
+The workflow in [`.forgejo/workflows/ci.yml`](.forgejo/workflows/ci.yml) repeats these
+commands rather than calling `just`, because `just` isn't packaged for Debian and
+installing it into the build container would cost more than the checks themselves. The two
+therefore have to be kept in sync by hand.
+
+> **On NixOS** there is no `cc` on `PATH` by default, so any `cargo` command that links
+> fails with ``linker `cc` not found``, and `rustfmt`/`clippy` are separate packages from
+> `rustc`. [`shell.nix`](shell.nix) supplies all of them plus `just`:
+>
+> ```sh
+> nix-shell        # then: just ci
+> ```
+
+## Releasing
+[`Cargo.toml`](Cargo.toml) is the single source of truth for the version, and the git tag
+is derived from it — never the other way round. There is no manual tagging or publishing
+step.
+
+1. In your PR, bump `version` in [`Cargo.toml`](Cargo.toml) following semver.
+2. Get the PR green and merge it into `main`.
+3. [`.forgejo/workflows/release.yml`](.forgejo/workflows/release.yml) does the rest: it
+   reads the version, checks whether `v<version>` is already tagged, and if not, runs the
+   tests, verifies the package, publishes to crates.io, then pushes the tag.
+
+A merge that does not bump the version is simply not a release — the workflow finds the
+existing tag and exits. That makes it safe to merge as often as you like, and safe to
+re-run a failed release by merging again.
+
+Publishing happens *before* tagging on purpose: crates.io is immutable and a tag is not,
+so a tag always means "this version really is on crates.io". In the one awkward case where
+the publish succeeds but the tag push fails, tag it by hand:
+
+```sh
+git tag -a v<version> -m "Release v<version>"
+git push origin v<version>
+```
+
+Two things the release depends on:
+
+- A `CARGO_REGISTRY_TOKEN` repository secret holding a crates.io API token with publish
+  rights on the `playfair` crate. The tag push uses the automatic `GITHUB_TOKEN`, which
+  Forgejo grants repository write access on `push` events, so it needs no setup.
+- `rust-version` in [`Cargo.toml`](Cargo.toml) staying honest. Bump it whenever a change
+  starts leaning on a newer stdlib API, so downstream users get a clear toolchain error
+  rather than a confusing compile failure.

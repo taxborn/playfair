@@ -1,5 +1,5 @@
 //! Testing library usage of what it would look like to use this structure.
-use playfair::{Playfair, Cipher};
+use playfair::{Cipher, Playfair};
 
 /// Main function
 fn main() {
@@ -13,5 +13,5 @@ fn main() {
 
     // Decrypt a given string reference
     let dec = pf.decrypt(&res);
-    println!("{dec}"); 
+    println!("{dec}");
 }

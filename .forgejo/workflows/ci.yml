@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: docker
+    # node, not rust: actions/checkout is a JavaScript action and needs node in
+    # the job container. Keep this non-slim - the slim variants drop gcc, and
+    # cargo needs cc to link.
+    container:
+      image: node:20-bookworm
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+            | sh -s -- -y --profile minimal --default-toolchain 1.97.1
+          . "$HOME/.cargo/env"
+          rustup component add clippy rustfmt
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - name: Formatting
+        run: cargo fmt --check
+      - name: Clippy
+        run: cargo clippy --all-targets -- -F clippy::missing_docs_in_private_items -D warnings
+      - name: Build
+        run: cargo build --all-targets
+      - name: Test
+        run: cargo test
+      - name: Docs
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --no-deps --document-private-items
