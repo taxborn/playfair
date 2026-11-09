@@ -62,10 +62,9 @@ just ci
 `bench` — if you want to run one at a time. Benchmarks are deliberately left out of `ci`,
 being far too slow and noisy to gate a pull request on.
 
-The workflow in [`.forgejo/workflows/ci.yml`](.forgejo/workflows/ci.yml) repeats these
-commands rather than calling `just`, because `just` isn't packaged for Debian and
-installing it into the build container would cost more than the checks themselves. The two
-therefore have to be kept in sync by hand.
+CI is [`.tangled/workflows/ci.yml`](.tangled/workflows/ci.yml), which runs `just ci` itself
+on a NixOS microVM, so there is nothing to keep in sync by hand. It pins the toolchain
+through rustup to the release the clippy deny list was tuned against.
 
 > **On NixOS** there is no `cc` on `PATH` by default, so any `cargo` command that links
 > fails with ``linker `cc` not found``, and `rustfmt`/`clippy` are separate packages from
@@ -82,7 +81,7 @@ step.
 
 1. In your PR, bump `version` in [`Cargo.toml`](Cargo.toml) following semver.
 2. Get the PR green and merge it into `main`.
-3. [`.forgejo/workflows/release.yml`](.forgejo/workflows/release.yml) does the rest: it
+3. [`.tangled/workflows/release.yml`](.tangled/workflows/release.yml) does the rest: it
    reads the version, checks whether `v<version>` is already tagged, and if not, runs the
    tests, verifies the package, publishes to crates.io, then pushes the tag.
 
@@ -99,11 +98,15 @@ git tag -a v<version> -m "Release v<version>"
 git push origin v<version>
 ```
 
-Two things the release depends on:
+Three things the release depends on:
 
 - A `CARGO_REGISTRY_TOKEN` repository secret holding a crates.io API token with publish
-  rights on the `playfair` crate. The tag push uses the automatic `GITHUB_TOKEN`, which
-  Forgejo grants repository write access on `push` events, so it needs no setup.
+  rights on the `playfair` crate.
+- `RELEASE_HANDLE` and `RELEASE_APP_PASSWORD` repository secrets. A spindle hands a
+  workflow no write access to its own repository, so the tag push mints an atproto
+  service-auth token from this account's app password, addressed to the repository and
+  good only for `receivePack`. The app password itself can do far more than push a tag,
+  which is why only runs of this repository's own branches ever see it.
 - `rust-version` in [`Cargo.toml`](Cargo.toml) staying honest. Bump it whenever a change
   starts leaning on a newer stdlib API, so downstream users get a clear toolchain error
   rather than a confusing compile failure.

@@ -1,0 +1,81 @@
+# Publishes to crates.io and tags the release whenever main carries a version
+# that has no tag yet. See "Releasing" in the README.
+#
+# Forgejo needed `concurrency: cancel-in-progress: false` to stop a newer run
+# killing this one mid-publish. The spindle has no such key and never cancels
+# a running workflow for a newer push; it runs one job at a time.
+when:
+  - event: push
+    branch: main
+
+engine: microvm
+image: nixos
+
+dependencies:
+  - rustup
+  - gcc
+  - git
+  - unstable#atproto-goat
+
+environment:
+  RUST_TOOLCHAIN: "1.97.1"
+
+steps:
+  # Read straight from Cargo.toml rather than via cargo, so the gate below can
+  # run before the toolchain is installed. Later steps read the file this
+  # writes; each step is its own shell, but the VM's filesystem persists.
+  - name: Read version from Cargo.toml
+    command: |
+      version="$(grep -m1 '^version = ' Cargo.toml | sed 's/.*"\(.*\)".*/\1/')"
+      echo "$version" > /tmp/release-version
+      echo "Cargo.toml declares $version"
+
+  # The whole release strategy in one step: Cargo.toml is the source of truth
+  # and the tag is derived from it. A merge that did not bump the version is
+  # simply not a release. The knot is asked directly because the spindle's
+  # clone is shallow, and later steps skip when this marker is absent.
+  - name: Has this version been released?
+    command: |
+      version="$(cat /tmp/release-version)"
+      if git ls-remote --exit-code --tags "$TANGLED_REPO_URL" "refs/tags/v$version" >/dev/null; then
+        echo "Tag v$version already exists, nothing to release."
+      else
+        touch /tmp/release-wanted
+        echo "v$version is new, releasing."
+      fi
+
+  - name: Install Rust
+    command: |
+      [ -e /tmp/release-wanted ] || exit 0
+      rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+      rustup default "$RUST_TOOLCHAIN"
+
+  - name: Test and verify the package
+    command: |
+      [ -e /tmp/release-wanted ] || exit 0
+      cargo test
+      cargo publish --dry-run
+
+  # Publish before tagging: crates.io is immutable and a tag is not, so a tag
+  # always means "this version really is on crates.io".
+  - name: Publish to crates.io
+    command: |
+      [ -e /tmp/release-wanted ] || exit 0
+      cargo publish
+
+  # The knot takes an HTTPS push authenticated by an atproto service-auth
+  # token addressed to this repository's DID and bound to receivePack. goat
+  # mints one from the RELEASE_HANDLE account's app password. The token goes
+  # in a header rather than the URL so git cannot echo it into the log.
+  - name: Tag the release
+    command: |
+      [ -e /tmp/release-wanted ] || exit 0
+      set -euo pipefail
+      tag="v$(cat /tmp/release-version)"
+      git config user.name "spindle.biscuits.at"
+      git config user.email "atproto@biscuits.at"
+      git tag -a "$tag" -m "Release $tag" "$TANGLED_SHA"
+      goat account login -u "$RELEASE_HANDLE" -p "$RELEASE_APP_PASSWORD"
+      token="$(goat account service-auth --aud "$TANGLED_REPO_REPO_DID" --lxm org.tangled.git.receivePack)"
+      git -c http.extraHeader="Authorization: Bearer $token" \
+        push "$TANGLED_REPO_URL" "refs/tags/$tag"

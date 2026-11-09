@@ -1,0 +1,29 @@
+# Every check `just ci` runs, on the spindle at spindle.biscuits.at.
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+    branch: main
+
+engine: microvm
+image: nixos
+
+# `just` comes from nixpkgs here, so CI calls the same recipe a local run
+# does instead of repeating its commands. The toolchain is pinned through
+# rustup rather than taken from nixpkgs, because the clippy deny list was
+# tuned against this exact release and a newer clippy adds lints.
+dependencies:
+  - rustup
+  - gcc
+  - just
+
+environment:
+  RUST_TOOLCHAIN: "1.97.1"
+
+steps:
+  - name: Install Rust
+    command: |
+      rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal -c clippy,rustfmt
+      rustup default "$RUST_TOOLCHAIN"
+  - name: just ci
+    command: just ci

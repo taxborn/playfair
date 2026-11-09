@@ -1,9 +1,8 @@
 # Task runner for playfair. `just ci` runs exactly what CI runs, in the same
 # order, so a green run here means a green run there.
 #
-# Keep this in sync with .forgejo/workflows/ci.yml by hand. CI deliberately does
-# not call `just`: it isn't packaged for Debian, so getting it into the build
-# container would cost more time than the checks themselves take to run.
+# CI (.tangled/workflows/ci.yml) calls `just ci` itself, so this file is the one
+# place the checks are defined.
 #
 # On NixOS nothing provides a linker by default, and rustfmt/clippy ship as
 # separate packages, so run these inside the shell.nix dev shell: `nix-shell` in
